@@ -28,6 +28,7 @@ const wrap  = (v, max) => ((v % max) + max) % max;
 const dist  = (a, b)   => Math.hypot(a.x - b.x, a.y - b.y);
 const rand  = (min, max) => min + Math.random() * (max - min);
 const randInt = (min, max) => Math.floor(rand(min, max + 1));
+const SHIP_COLORS = ['#fff', '#00e5ff', '#ff4d8d', '#b8ff5a', '#ffb000'];
 
 // ── Bullet ────────────────────────────────────────────────────────────────────
 class Bullet {
@@ -175,7 +176,11 @@ class Asteroid {
 
 // ── Ship ──────────────────────────────────────────────────────────────────────
 class Ship {
-  constructor() { this.reset(); }
+  constructor() {
+    this.colorIndex = 0;
+    this.color = SHIP_COLORS[this.colorIndex];
+    this.reset();
+  }
 
   reset() {
     this.x      = W / 2;
@@ -217,6 +222,11 @@ class Ship {
     this.y = wrap(this.y + this.vy * dt, H);
   }
 
+  changeColor() {
+    this.colorIndex = (this.colorIndex + 1) % SHIP_COLORS.length;
+    this.color = SHIP_COLORS[this.colorIndex];
+  }
+
   tryShoot() {
     if (this.shootCooldown > 0 || this.dead) return [];
     this.shootCooldown = 0.2;
@@ -234,7 +244,7 @@ class Ship {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = this.color;
     ctx.lineWidth   = 1.5;
     ctx.lineJoin    = 'round';
 
@@ -374,6 +384,9 @@ function update(dt) {
     if (deadTimer <= 0) { state = 'playing'; ship.reset(); }
     return;
   }
+
+  // Cambiar el color de la nave
+  if (pressed('KeyS')) ship.changeColor();
 
   // Disparar
   if (pressed('Space')) {
